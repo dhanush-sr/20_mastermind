@@ -1,6 +1,10 @@
-def feedback(code, guess):
+from collections import Counter
 
-    # the code, so duplicate symbols can consume the same code occurrence.
+
+def feedback(code, guess):
+    # Resolve exact matches first, then count partials only among the leftover
+    # positions, so each code occurrence can contribute to feedback at most once.
     exact = sum(a == b for a, b in zip(code, guess))
-    partial = sum(ch in code for ch in guess) - exact
+    rest = [(a, b) for a, b in zip(code, guess) if a != b]
+    partial = sum((Counter(a for a, _ in rest) & Counter(b for _, b in rest)).values())
     return exact, partial
