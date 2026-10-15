@@ -1,12 +1,20 @@
 import random
 from logic import feedback
 
+# name: (code length, highest symbol, allowed guesses)
+DIFFICULTIES = {
+    "easy": (3, 4, 12),
+    "normal": (4, 6, 10),
+    "hard": (5, 8, 8),
+}
+
 
 class Mastermind:
-    def __init__(self):
-        self.code = [str(random.randint(1, 6)) for _ in range(4)]
+    def __init__(self, difficulty="normal"):
+        self.length, self.max_symbol, self.max_turns = DIFFICULTIES[difficulty]
+        self.symbols = "".join(str(n) for n in range(1, self.max_symbol + 1))
+        self.code = [random.choice(self.symbols) for _ in range(self.length)]
         self.history = []
-        self.max_turns = 10
         self.over = False
         self.won = False
 
@@ -26,15 +34,15 @@ class Mastermind:
         return exact, partial
 
     def run(self):
-        print("Mastermind — enter four digits from 1 to 6. Type q to quit.")
+        print(f"Mastermind — enter {self.length} digits from 1 to {self.max_symbol}. Type q to quit.")
         while not self.over:
             raw = input(f"{self.turns_left} turns left > ").strip()
             if raw.lower() == "q":
                 self.over = True
                 print("You quit. The code was", "".join(self.code))
                 return
-            if len(raw) != 4 or any(ch not in "123456" for ch in raw):
-                print("Enter exactly four digits from 1 to 6.")
+            if len(raw) != self.length or any(ch not in self.symbols for ch in raw):
+                print(f"Enter exactly {self.length} digits from 1 to {self.max_symbol}.")
                 continue
             exact, partial = self.guess(raw)
             print("Exact:", exact, " Partial:", partial)
