@@ -33,19 +33,39 @@ class Mastermind:
             self.over = True
         return exact, partial
 
+    def validate(self, raw):
+        """Return an error message for a malformed guess, or None if it is valid."""
+        if len(raw) != self.length:
+            return f"Guess must be exactly {self.length} digits (got {len(raw)})."
+        bad = sorted(set(ch for ch in raw if ch not in self.symbols))
+        if bad:
+            return f"Invalid symbol(s) {', '.join(repr(ch) for ch in bad)}; use digits 1 to {self.max_symbol}."
+        return None
+
+    def show_history(self):
+        print(f"{'#':>3}  {'Guess':<5}  {'Exact':>5}  {'Partial':>7}")
+        for i, (guess, exact, partial) in enumerate(self.history, 1):
+            print(f"{i:>3}  {guess:<5}  {exact:>5}  {partial:>7}")
+
     def run(self):
         print(f"Mastermind — enter {self.length} digits from 1 to {self.max_symbol}. Type q to quit.")
         while not self.over:
-            raw = input(f"{self.turns_left} turns left > ").strip()
+            try:
+                raw = input(f"{self.turns_left} turns left > ").strip()
+            except (EOFError, KeyboardInterrupt):
+                raw = "q"
+                print()
             if raw.lower() == "q":
                 self.over = True
                 print("You quit. The code was", "".join(self.code))
                 return
-            if len(raw) != self.length or any(ch not in self.symbols for ch in raw):
-                print(f"Enter exactly {self.length} digits from 1 to {self.max_symbol}.")
+            error = self.validate(raw)
+            if error:
+                print(error, "(no turn used)")
                 continue
             exact, partial = self.guess(raw)
             print("Exact:", exact, " Partial:", partial)
+            self.show_history()
         if self.won:
             print(f"You win! Cracked the code in {len(self.history)} guesses.")
         else:
